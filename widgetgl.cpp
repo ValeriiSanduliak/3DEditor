@@ -12,6 +12,7 @@
 WidgetGL::WidgetGL(QWidget *parent)
     : QOpenGLWidget(parent)
 {
+    setFocusPolicy(Qt::StrongFocus); // Встановлення політики фокусу
     m_camera = new Camera;
     m_camera->translate(QVector3D(0.0f, 0.0f, -5.0f));
 }
@@ -26,7 +27,7 @@ WidgetGL::~WidgetGL()
 
 void WidgetGL::initializeGL()
 {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -36,6 +37,13 @@ void WidgetGL::initializeGL()
 
     initShaders();
     initCube(1.0f);
+
+    connect(&m_timerMoveUp, &QTimer::timeout, this, &WidgetGL::moveCameraUp);
+    connect(&m_timerMoveDown, &QTimer::timeout, this, &WidgetGL::moveCameraDown);
+    connect(&m_timerMoveLeft, &QTimer::timeout, this, &WidgetGL::moveCameraLeft);
+    connect(&m_timerMoveRight, &QTimer::timeout, this, &WidgetGL::moveCameraRight);
+    connect(&m_timerMoveForward, &QTimer::timeout, this, &WidgetGL::moveCameraForward);
+    connect(&m_timerMoveBackward, &QTimer::timeout, this, &WidgetGL::moveCameraBackward);
 
     m_objects.append(new Engine3D);
     m_objects[1]->translate(QVector3D(8.0f, 0.0f, 0.0f));
@@ -101,14 +109,98 @@ void WidgetGL::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
-void WidgetGL::wheelEvent(QWheelEvent *event)
-{
-    if (event->angleDelta().y() > 0) {
-        m_camera->translate(QVector3D(0.0f, 0.0f, +0.25f));
-    } else if (event->angleDelta().y() < 0) {
-        m_camera->translate(QVector3D(0.0f, 0.0f, -0.25f));
-    }
+// void WidgetGL::wheelEvent(QWheelEvent *event)
+// {
+//     if (event->angleDelta().y() > 0) {
+//         m_camera->translate(QVector3D(0.0f, 0.0f, +0.25f));
+//     } else if (event->angleDelta().y() < 0) {
+//         m_camera->translate(QVector3D(0.0f, 0.0f, -0.25f));
+//     }
 
+//     update();
+// }
+
+void WidgetGL::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_Space:
+        m_timerMoveUp.start(timerSpeed);
+        break;
+    case Qt::Key_Shift:
+        m_timerMoveDown.start(timerSpeed);
+        break;
+    case Qt::Key_A:
+        m_timerMoveLeft.start(timerSpeed);
+        break;
+    case Qt::Key_D:
+        m_timerMoveRight.start(timerSpeed);
+        break;
+    case Qt::Key_W:
+        m_timerMoveForward.start(timerSpeed);
+        break;
+    case Qt::Key_S:
+        m_timerMoveBackward.start(timerSpeed);
+        break;
+    }
+}
+
+void WidgetGL::keyReleaseEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_Space:
+        m_timerMoveUp.stop();
+        break;
+    case Qt::Key_Shift:
+        m_timerMoveDown.stop();
+        break;
+    case Qt::Key_A:
+        m_timerMoveLeft.stop();
+        break;
+    case Qt::Key_D:
+        m_timerMoveRight.stop();
+        break;
+    case Qt::Key_W:
+        m_timerMoveForward.stop();
+        break;
+    case Qt::Key_S:
+        m_timerMoveBackward.stop();
+        break;
+    }
+}
+
+void WidgetGL::moveCameraUp()
+{
+    m_camera->translate(QVector3D(0.0f, -cameraSpeed, 0.0f));
+    update();
+}
+
+void WidgetGL::moveCameraDown()
+{
+    m_camera->translate(QVector3D(0.0f, cameraSpeed, 0.0f));
+    update();
+}
+
+void WidgetGL::moveCameraLeft()
+{
+    m_camera->translate(QVector3D(cameraSpeed, 0.0f, 0.0f));
+    update();
+}
+
+void WidgetGL::moveCameraRight()
+{
+    m_camera->translate(QVector3D(-cameraSpeed, 0.0f, 0.0f));
+    update();
+}
+
+void WidgetGL::moveCameraForward()
+{
+    m_camera->translate(QVector3D(0.0f, 0.0f, cameraSpeed));
+    update();
+}
+
+void WidgetGL::moveCameraBackward()
+{
+    m_camera->translate(QVector3D(0.0f, 0.0f, -cameraSpeed));
     update();
 }
 

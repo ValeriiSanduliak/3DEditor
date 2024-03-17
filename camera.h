@@ -23,6 +23,9 @@ private:
     QMatrix4x4 m_globalTransform;
 
     QMatrix4x4 m_viewMatrix;
+
+    bool m_moveUp; // Прапорець, що вказує, чи відбувається рух вгору
+    bool m_moveDown; // Прапорець, що вказує, чи відбувається рух вниз
 };
 
 #endif // CAMERA_H

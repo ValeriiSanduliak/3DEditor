@@ -95,6 +95,8 @@ void Object3D::draw(QOpenGLShaderProgram *program, QOpenGLFunctions *functions)
 
     program->setUniformValue("u_modelMatrix", modelMatrix);
     program->setUniformValue("materialProperty.diffuseColor", m_material->diffuseColor());
+    program->setUniformValue("u_lightPosition", QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
+    program->setUniformValue("u_lightPower", 5.0f);
     program->setUniformValue("u_isUsingDiffuseMap", m_material->isUsingDiffuseMap());
 
     m_vertexBuffer.bind();
