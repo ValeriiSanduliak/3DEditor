@@ -23,9 +23,19 @@ void Camera::rotate(const QQuaternion &r)
     updateViewMatrix();
 }
 
-void Camera::rotateX(const QQuaternion &r) {}
+void Camera::rotateX(const QQuaternion &r)
+{
+    m_rotateX = r * m_rotateX;
+    m_rotate = m_rotateX * m_rotateY;
+    updateViewMatrix();
+}
 
-void Camera::rotateY(const QQuaternion &r) {}
+void Camera::rotateY(const QQuaternion &r)
+{
+    m_rotateY = r * m_rotateY;
+    m_rotate = m_rotateX * m_rotateY;
+    updateViewMatrix();
+}
 
 void Camera::translate(const QVector3D &t)
 {

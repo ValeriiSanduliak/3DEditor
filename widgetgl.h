@@ -38,7 +38,7 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) override;
 
     void initShaders();
-    void initCube(float width);
+    void initCube(float width, float heigth, float depth);
 
     // Camera movement
     void moveCameraUp();
@@ -52,6 +52,8 @@ protected:
     void moveCameraForward();
 
     void moveCameraBackward();
+
+    QVector3D screenCoordsToWorldCoords(const QVector2D &mousePosition);
 
 private:
     // Model view projection matrix

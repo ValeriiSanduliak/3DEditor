@@ -36,8 +36,9 @@ void WidgetGL::initializeGL()
     glEnable(GL_CULL_FACE);
 
     initShaders();
-    initCube(1.0f);
-
+    initCube(1.0f, 1.0f, 1.0f);
+    m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, 2.0f, 0.0f));
+    m_transformObjects.append(m_objects[m_objects.size() - 1]);
     connect(&m_timerMoveUp, &QTimer::timeout, this, &WidgetGL::moveCameraUp);
     connect(&m_timerMoveDown, &QTimer::timeout, this, &WidgetGL::moveCameraDown);
     connect(&m_timerMoveLeft, &QTimer::timeout, this, &WidgetGL::moveCameraLeft);
@@ -49,11 +50,15 @@ void WidgetGL::initializeGL()
     m_objects[1]->translate(QVector3D(8.0f, 0.0f, 0.0f));
 
     m_objects[m_objects.size() - 1]->loadObjectFromFile(":/Monkey2side.obj");
+    m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, 5.0f, 0.0f));
+    m_transformObjects.append(m_objects[m_objects.size() - 1]);
 
-    for (int i = 0; i < m_objects.size(); ++i) {
-        m_objects[i]->translate(QVector3D(0.0f, 2 * i, 0.0f));
-        m_transformObjects.append(m_objects[i]);
-    }
+    initCube(1.0f, 1.0f, 1.0f);
+    m_transformObjects.append(m_objects[m_objects.size() - 1]);
+
+    initCube(40.0f, 2.0f, 40.0f);
+    m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, -2.0f, 0.0f));
+    m_transformObjects.append(m_objects[m_objects.size() - 1]);
 }
 
 void WidgetGL::resizeGL(int w, int h)
@@ -89,6 +94,12 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
 {
     if (event->buttons() == Qt::LeftButton) {
         m_mousePosition = QVector2D(event->pos());
+    } else if (event->buttons() == Qt::RightButton) {
+        QVector3D t = screenCoordsToWorldCoords(QVector2D(event->pos()));
+        initCube(1.0f, 1.0f, 1.0f);
+        m_objects[m_objects.size() - 1]->translate(t);
+        m_transformObjects.append(m_objects[m_objects.size() - 1]);
+        update();
     }
     event->accept();
 }
@@ -101,11 +112,14 @@ void WidgetGL::mouseMoveEvent(QMouseEvent *event)
     QVector2D diff = QVector2D(event->pos()) - m_mousePosition;
     m_mousePosition = QVector2D(event->pos());
 
-    float angle = diff.length() / 2.0;
+    // float angle = diff.length() / 2.0;
+    // QVector3D axis = QVector3D(diff.y(), diff.x(), 0.0);
+    // m_camera->rotate(QQuaternion::fromAxisAndAngle(axis, angle));
 
-    QVector3D axis = QVector3D(diff.y(), diff.x(), 0.0);
-
-    m_camera->rotate(QQuaternion::fromAxisAndAngle(axis, angle));
+    float angleX = diff.y() / 2.0f;
+    float angleY = diff.x() / 2.0f;
+    m_camera->rotateX(QQuaternion::fromAxisAndAngle(1.0f, 0.0f, 0.0f, angleX));
+    m_camera->rotateY(QQuaternion::fromAxisAndAngle(0.0f, 1.0f, 0.0f, angleY));
     update();
 }
 
@@ -204,6 +218,24 @@ void WidgetGL::moveCameraBackward()
     update();
 }
 
+QVector3D WidgetGL::screenCoordsToWorldCoords(const QVector2D &mousePosition)
+{
+    QVector4D tmp(2.0f * mousePosition.x() / width() - 1.0f,
+                  -2.0f * mousePosition.y() / height() + 1.0f,
+                  -1.0f,
+                  1.0f);
+    QVector4D tmpWorld((m_projectionMatrix.inverted() * tmp).toVector2D(), -1.0f, 0.0f);
+    QVector3D Direction((m_camera->getViewMatrix().inverted() * tmpWorld).toVector3D().normalized());
+    QVector3D camPosition(
+        (m_camera->getViewMatrix().inverted() * QVector4D(0.0f, 0.0f, 0.0f, 1.0f)).toVector3D());
+
+    QVector3D N(0.0f, 1.0f, 0.0f);
+    float t = -QVector3D::dotProduct(camPosition, N) / QVector3D::dotProduct(Direction, N);
+    QVector3D result = camPosition + Direction * t;
+
+    return result;
+}
+
 void WidgetGL::initShaders()
 {
     if (!m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vshader.vsh"))
@@ -216,86 +248,88 @@ void WidgetGL::initShaders()
         close();
 }
 
-void WidgetGL::initCube(float width)
+void WidgetGL::initCube(float width, float heigth, float depth)
 {
     float width_div_2 = width / 2.0f;
+    float heigth_div_2 = heigth / 2.0f;
+    float depth_div_2 = depth / 2.0f;
     QVector<VertexData> vertexes;
     //
-    vertexes.append(VertexData(QVector3D(-width_div_2, width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, heigth_div_2, depth_div_2),
                                QVector2D(0.0, 1.0),
                                QVector3D(0.0, 0.0, 1.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, -width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, -heigth_div_2, depth_div_2),
                                QVector2D(0.0, 0.0),
                                QVector3D(0.0, 0.0, 1.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, heigth_div_2, depth_div_2),
                                QVector2D(1.0, 1.0),
                                QVector3D(0.0, 0.0, 1.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, -width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, -heigth_div_2, depth_div_2),
                                QVector2D(1.0, 0.0),
                                QVector3D(0.0, 0.0, 1.0)));
 
-    vertexes.append(VertexData(QVector3D(width_div_2, width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, heigth_div_2, depth_div_2),
                                QVector2D(0.0, 1.0),
                                QVector3D(1.0, 0.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, -width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, -heigth_div_2, depth_div_2),
                                QVector2D(0.0, 0.0),
                                QVector3D(1.0, 0.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 1.0),
                                QVector3D(1.0, 0.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, -width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, -heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 0.0),
                                QVector3D(1.0, 0.0, 0.0)));
 
-    vertexes.append(VertexData(QVector3D(width_div_2, width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, heigth_div_2, depth_div_2),
                                QVector2D(0.0, 1.0),
                                QVector3D(0.0, 1.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, heigth_div_2, -depth_div_2),
                                QVector2D(0.0, 0.0),
                                QVector3D(0.0, 1.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, heigth_div_2, depth_div_2),
                                QVector2D(1.0, 1.0),
                                QVector3D(0.0, 1.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 0.0),
                                QVector3D(0.0, 1.0, 0.0)));
 
-    vertexes.append(VertexData(QVector3D(width_div_2, width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, heigth_div_2, -depth_div_2),
                                QVector2D(0.0, 1.0),
                                QVector3D(0.0, 0.0, -1.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, -width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, -heigth_div_2, -depth_div_2),
                                QVector2D(0.0, 0.0),
                                QVector3D(0.0, 0.0, -1.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 1.0),
                                QVector3D(0.0, 0.0, -1.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, -width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, -heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 0.0),
                                QVector3D(0.0, 0.0, -1.0)));
 
-    vertexes.append(VertexData(QVector3D(-width_div_2, width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, heigth_div_2, depth_div_2),
                                QVector2D(0.0, 1.0),
                                QVector3D(-1.0, 0.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, heigth_div_2, -depth_div_2),
                                QVector2D(0.0, 0.0),
                                QVector3D(-1.0, 0.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, -width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, -heigth_div_2, depth_div_2),
                                QVector2D(1.0, 1.0),
                                QVector3D(-1.0, 0.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, -width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, -heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 0.0),
                                QVector3D(-1.0, 0.0, 0.0)));
 
-    vertexes.append(VertexData(QVector3D(-width_div_2, -width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, -heigth_div_2, depth_div_2),
                                QVector2D(0.0, 1.0),
                                QVector3D(0.0, -1.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(-width_div_2, -width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(-width_div_2, -heigth_div_2, -depth_div_2),
                                QVector2D(0.0, 0.0),
                                QVector3D(0.0, -1.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, -width_div_2, width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, -heigth_div_2, depth_div_2),
                                QVector2D(1.0, 1.0),
                                QVector3D(0.0, -1.0, 0.0)));
-    vertexes.append(VertexData(QVector3D(width_div_2, -width_div_2, -width_div_2),
+    vertexes.append(VertexData(QVector3D(width_div_2, -heigth_div_2, -depth_div_2),
                                QVector2D(1.0, 0.0),
                                QVector3D(0.0, -1.0, 0.0)));
 

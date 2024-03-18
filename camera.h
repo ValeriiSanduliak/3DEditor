@@ -30,8 +30,8 @@ private:
 
     QMatrix4x4 m_viewMatrix;
 
-    bool m_moveUp; // Прапорець, що вказує, чи відбувається рух вгору
-    bool m_moveDown; // Прапорець, що вказує, чи відбувається рух вниз
+    QQuaternion m_rotateX;
+    QQuaternion m_rotateY;
 };
 
 #endif // CAMERA_H
