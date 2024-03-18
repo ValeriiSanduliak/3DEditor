@@ -11,9 +11,15 @@ public:
 
     void draw(QOpenGLShaderProgram *program, QOpenGLFunctions *functions = 0);
     void rotate(const QQuaternion &r);
+    void rotateX(const QQuaternion &r);
+    void rotateY(const QQuaternion &r);
     void translate(const QVector3D &t);
     void scale(const float &s);
     void setGlobalTransform(const QMatrix4x4 &g);
+
+    const QMatrix4x4 &getViewMatrix() const;
+
+    void updateViewMatrix();
 
 private:
     QQuaternion m_rotate;

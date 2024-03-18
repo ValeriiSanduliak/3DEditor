@@ -20,39 +20,41 @@ void Camera::rotate(const QQuaternion &r)
 {
     m_rotate = r * m_rotate;
 
-    m_viewMatrix.setToIdentity();
-    m_viewMatrix.translate(m_translate);
-    m_viewMatrix.rotate(m_rotate);
-    m_viewMatrix.scale(m_scale);
-    m_viewMatrix = m_viewMatrix * m_globalTransform.inverted();
+    updateViewMatrix();
 }
+
+void Camera::rotateX(const QQuaternion &r) {}
+
+void Camera::rotateY(const QQuaternion &r) {}
 
 void Camera::translate(const QVector3D &t)
 {
     m_translate += t;
 
-    m_viewMatrix.setToIdentity();
-    m_viewMatrix.translate(m_translate);
-    m_viewMatrix.rotate(m_rotate);
-    m_viewMatrix.scale(m_scale);
-    m_viewMatrix = m_viewMatrix * m_globalTransform.inverted();
+    updateViewMatrix();
 }
 
 void Camera::scale(const float &s)
 {
     m_scale *= s;
 
-    m_viewMatrix.setToIdentity();
-    m_viewMatrix.translate(m_translate);
-    m_viewMatrix.rotate(m_rotate);
-    m_viewMatrix.scale(m_scale);
-    m_viewMatrix = m_viewMatrix * m_globalTransform.inverted();
+    updateViewMatrix();
 }
 
 void Camera::setGlobalTransform(const QMatrix4x4 &g)
 {
     m_globalTransform = g;
 
+    updateViewMatrix();
+}
+
+const QMatrix4x4 &Camera::getViewMatrix() const
+{
+    return m_viewMatrix;
+}
+
+void Camera::updateViewMatrix()
+{
     m_viewMatrix.setToIdentity();
     m_viewMatrix.translate(m_translate);
     m_viewMatrix.rotate(m_rotate);
