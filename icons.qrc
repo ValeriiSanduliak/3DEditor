@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Icon_Cylinder_Active.png</file>
+        <file>Icon_Cylinder_Inactive.png</file>
+        <file>Icon_Con_Active.png</file>
+        <file>Icon_Con_Inactive.png</file>
+        <file>Icon_Sphere_Active.png</file>
+        <file>Icon_Sphere_Inactive.png</file>
+        <file>Icon_Cube_Active.png</file>
+        <file>Icon_Cube_Inactive.png</file>
+    </qresource>
+</RCC>

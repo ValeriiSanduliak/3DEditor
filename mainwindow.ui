@@ -29,9 +29,23 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>21</width>
-      <height>22</height>
+      <width>41</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QCheckBox::indicator {
+     width: 40px;
+     height: 40px;
+ }
+  QCheckBox::indicator:checked
+  {
+    image: url(:/Icon_Cube_Active.png);
+  }
+  QCheckBox::indicator:unchecked
+  {
+    image: url(:/Icon_Cube_Inactive.png);
+  }</string>
     </property>
     <property name="text">
      <string/>
@@ -41,10 +55,24 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>40</y>
-      <width>21</width>
-      <height>22</height>
+      <y>50</y>
+      <width>41</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QCheckBox::indicator {
+     width: 40px;
+     height: 40px;
+ }
+  QCheckBox::indicator:checked
+  {
+    image: url(:/Icon_Cylinder_Active.png);
+  }
+  QCheckBox::indicator:unchecked
+  {
+    image: url(:/Icon_Cylinder_Inactive.png);
+  }</string>
     </property>
     <property name="text">
      <string/>
@@ -54,10 +82,25 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>70</y>
-      <width>21</width>
-      <height>22</height>
+      <y>90</y>
+      <width>41</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QCheckBox::indicator {
+     width: 40px;
+     height: 40px;
+ }
+
+  QCheckBox::indicator:checked
+  {
+    image: url(:/Icon_Con_Active.png);
+  }
+  QCheckBox::indicator:unchecked
+  {
+    image: url(:/Icon_Con_Inactive.png);
+  }</string>
     </property>
     <property name="text">
      <string/>
@@ -67,10 +110,25 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>100</y>
-      <width>21</width>
-      <height>22</height>
+      <y>130</y>
+      <width>41</width>
+      <height>41</height>
      </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QCheckBox::indicator {
+     width: 40px;
+     height: 40px;
+ }
+
+  QCheckBox::indicator:checked
+  {
+    image: url(:/Icon_Sphere_Active.png);
+  }
+  QCheckBox::indicator:unchecked
+  {
+    image: url(:/Icon_Sphere_Inactive.png);
+  }</string>
     </property>
     <property name="text">
      <string/>

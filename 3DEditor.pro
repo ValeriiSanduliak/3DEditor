@@ -53,6 +53,7 @@ DEPENDPATH += $$PWD/3dparty/assimp/include
 DISTFILES +=
 
 RESOURCES += \
+    icons.qrc \
     models.qrc \
     shaders.qrc \
     textures.qrc
