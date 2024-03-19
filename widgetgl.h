@@ -1,6 +1,7 @@
 #ifndef WIDGETGL_H
 #define WIDGETGL_H
 
+#include <QCheckBox>
 #include <QMatrix4x4>
 #include <QMouseEvent>
 #include <QOpenGLBuffer>
@@ -13,6 +14,7 @@
 #include <QVector3D>
 #include <QVector>
 #include <QWheelEvent>
+#include <mainwindow.h>
 class Engine3D;
 class Transformational;
 class Camera;
@@ -22,6 +24,8 @@ class WidgetGL : public QOpenGLWidget
 public:
     WidgetGL(QWidget *parent = nullptr);
     ~WidgetGL();
+
+    void setCheckBox(QCheckBox *checkBox);
 
 protected:
     // QOpenGLWidget interface
@@ -76,6 +80,8 @@ private:
     QTimer m_timerMoveBackward;
     float cameraSpeed = 0.1f;
     uint timerSpeed = 14;
+
+    QVector<QCheckBox *> m_checkbox; // Посилання на checkbox
 };
 
 #endif // WIDGETGL_H

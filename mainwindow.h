@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QCheckBox>
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -17,7 +18,11 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected slots:
+    void checkBoxClicked();
+
 private:
     Ui::MainWindow *ui;
+    QList<QCheckBox *> checkBoxes;
 };
 #endif // MAINWINDOW_H

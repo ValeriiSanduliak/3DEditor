@@ -12,6 +12,7 @@
 WidgetGL::WidgetGL(QWidget *parent)
     : QOpenGLWidget(parent)
 {
+    setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus); // Встановлення політики фокусу
     m_camera = new Camera;
     m_camera->translate(QVector3D(0.0f, 0.0f, -5.0f));
@@ -27,7 +28,7 @@ WidgetGL::~WidgetGL()
 
 void WidgetGL::initializeGL()
 {
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.5f, 0.5f, 0.5f, 0.8f);
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -47,11 +48,6 @@ void WidgetGL::initializeGL()
     connect(&m_timerMoveBackward, &QTimer::timeout, this, &WidgetGL::moveCameraBackward);
 
     m_objects.append(new Engine3D);
-    m_objects[1]->translate(QVector3D(8.0f, 0.0f, 0.0f));
-
-    m_objects[m_objects.size() - 1]->loadObjectFromFile(":/Monkey2side.obj");
-    m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, 5.0f, 0.0f));
-    m_transformObjects.append(m_objects[m_objects.size() - 1]);
 
     initCube(1.0f, 1.0f, 1.0f);
     m_transformObjects.append(m_objects[m_objects.size() - 1]);
@@ -96,10 +92,34 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
         m_mousePosition = QVector2D(event->pos());
     } else if (event->buttons() == Qt::RightButton) {
         QVector3D t = screenCoordsToWorldCoords(QVector2D(event->pos()));
-        initCube(1.0f, 1.0f, 1.0f);
-        m_objects[m_objects.size() - 1]->translate(t);
-        m_transformObjects.append(m_objects[m_objects.size() - 1]);
-        update();
+        if (m_checkbox[0]->isChecked()) {
+            initCube(1.0f, 1.0f, 1.0f);
+            m_objects[m_objects.size() - 1]->translate(t);
+            m_transformObjects.append(m_objects[m_objects.size() - 1]);
+            update();
+
+        } else if (m_checkbox[1]->isChecked()) {
+            Engine3D *newObject = new Engine3D;
+            newObject->loadObjectFromFile(":/Objects/Cylinder.obj");
+            newObject->translate(t);
+            m_objects.append(newObject);
+            m_transformObjects.append(newObject);
+            update();
+        } else if (m_checkbox[2]->isChecked()) {
+            Engine3D *newObject = new Engine3D;
+            newObject->loadObjectFromFile(":/Objects/Cone.obj");
+            newObject->translate(t);
+            m_objects.append(newObject);
+            m_transformObjects.append(newObject);
+            update();
+        } else if (m_checkbox[3]->isChecked()) {
+            Engine3D *newObject = new Engine3D;
+            newObject->loadObjectFromFile(":/Objects/Sphere.obj");
+            newObject->translate(t);
+            m_objects.append(newObject);
+            m_transformObjects.append(newObject);
+            update();
+        }
     }
     event->accept();
 }
@@ -236,6 +256,11 @@ QVector3D WidgetGL::screenCoordsToWorldCoords(const QVector2D &mousePosition)
     return result;
 }
 
+void WidgetGL::setCheckBox(QCheckBox *checkBox)
+{
+    m_checkbox.append(checkBox);
+}
+
 void WidgetGL::initShaders()
 {
     if (!m_shaderProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vshader.vsh"))
@@ -344,7 +369,7 @@ void WidgetGL::initCube(float width, float heigth, float depth)
     }
 
     Material *newMtl = new Material;
-    newMtl->setDiffuseMap(":/cube.png");
+    newMtl->setDiffuseMap(":/Objects/default.png");
     newMtl->setDiffuseColor(QVector3D(1.0, 1.0, 1.0));
 
     Engine3D *newObject = new Engine3D;

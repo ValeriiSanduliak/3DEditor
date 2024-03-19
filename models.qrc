@@ -1,12 +1,15 @@
 <RCC>
     <qresource prefix="/">
         <file>blue.png</file>
+        <file>red.png</file>
+        <file>Objects/Cone.mtl</file>
+        <file>Objects/Cone.obj</file>
+        <file>Objects/Cylinder.mtl</file>
+        <file>Objects/Cylinder.obj</file>
+        <file>Objects/default.png</file>
+        <file>Objects/Sphere.mtl</file>
+        <file>Objects/Sphere.obj</file>
         <file>Monkey2side.mtl</file>
         <file>Monkey2side.obj</file>
-        <file>red.png</file>
-        <file>Sphere.mtl</file>
-        <file>Sphere.obj</file>
-        <file>Cube.mtl</file>
-        <file>Cube.obj</file>
     </qresource>
 </RCC>
