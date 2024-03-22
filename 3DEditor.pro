@@ -43,9 +43,9 @@ LIBS += -lopengl32
 
 
 # Assimp
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/3dparty/assimp/release/ -lassimp-vc143-mtd
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3dparty/assimp/debug/ -lassimp-vc143-mtd
-else:unix: LIBS += -L$$PWD/3dparty/assimp/ -lassimp-vc143-mtd
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/3dparty/assimp/release/ -lassimp-vc143-mtd
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/3dparty/assimp/debug/ -lassimp-vc143-mtd
+#else:unix: LIBS += -L$$PWD/3dparty/assimp/ -lassimp-vc143-mtd
 
 INCLUDEPATH += $$PWD/3dparty/assimp/include
 DEPENDPATH += $$PWD/3dparty/assimp/include
