@@ -5,6 +5,7 @@
 #include <QMatrix4x4>
 #include <QMouseEvent>
 #include <QOpenGLBuffer>
+#include <QOpenGLFramebufferObject>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 #include <QOpenGLWidget>
@@ -59,17 +60,23 @@ protected:
 
     QVector3D screenCoordsToWorldCoords(const QVector2D &mousePosition);
 
+    int selectObject(int xx, int yy, QVector<Transformational *> &objs);
+
 private:
     // Model view projection matrix
     QMatrix4x4 m_projectionMatrix;
 
     // Shader program
     QOpenGLShaderProgram m_shaderProgram;
+    QOpenGLShaderProgram m_selectProgram;
+
+    QOpenGLFramebufferObject *m_selectBuffer;
 
     QVector2D m_mousePosition;
 
     QVector<Engine3D *> m_objects;
     QVector<Transformational *> m_transformObjects;
+    QVector<Transformational *> m_selectedObjects;
 
     Camera *m_camera;
     QTimer m_timerMoveUp;

@@ -16,6 +16,8 @@ WidgetGL::WidgetGL(QWidget *parent)
     setFocusPolicy(Qt::StrongFocus); // Встановлення політики фокусу
     m_camera = new Camera;
     m_camera->translate(QVector3D(0.0f, 0.0f, -5.0f));
+
+    m_selectBuffer = 0;
 }
 
 WidgetGL::~WidgetGL()
@@ -40,6 +42,7 @@ void WidgetGL::initializeGL()
     initCube(1.0f, 1.0f, 1.0f);
     m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, 2.0f, 0.0f));
     m_transformObjects.append(m_objects[m_objects.size() - 1]);
+    m_selectedObjects.append(m_objects[m_objects.size() - 1]);
     connect(&m_timerMoveUp, &QTimer::timeout, this, &WidgetGL::moveCameraUp);
     connect(&m_timerMoveDown, &QTimer::timeout, this, &WidgetGL::moveCameraDown);
     connect(&m_timerMoveLeft, &QTimer::timeout, this, &WidgetGL::moveCameraLeft);
@@ -51,10 +54,13 @@ void WidgetGL::initializeGL()
 
     initCube(1.0f, 1.0f, 1.0f);
     m_transformObjects.append(m_objects[m_objects.size() - 1]);
+    m_selectedObjects.append(m_objects[m_objects.size() - 1]);
 
     initCube(40.0f, 2.0f, 40.0f);
     m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, -2.0f, 0.0f));
     m_transformObjects.append(m_objects[m_objects.size() - 1]);
+
+    m_selectBuffer = new QOpenGLFramebufferObject(width(), height());
 }
 
 void WidgetGL::resizeGL(int w, int h)
@@ -67,6 +73,11 @@ void WidgetGL::resizeGL(int w, int h)
 
     // Set the perspective projection
     m_projectionMatrix.perspective(45.0f, aspect, 0.1f, 100.0f);
+
+    if (m_selectBuffer != 0)
+        delete m_selectBuffer;
+
+    m_selectBuffer = new QOpenGLFramebufferObject(w, h);
 }
 
 void WidgetGL::paintGL()
@@ -96,6 +107,7 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
             initCube(1.0f, 1.0f, 1.0f);
             m_objects[m_objects.size() - 1]->translate(t);
             m_transformObjects.append(m_objects[m_objects.size() - 1]);
+            m_selectedObjects.append(m_objects[m_objects.size() - 1]);
             update();
 
         } else if (m_checkbox[1]->isChecked()) {
@@ -104,6 +116,7 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
             newObject->translate(t);
             m_objects.append(newObject);
             m_transformObjects.append(newObject);
+            m_selectedObjects.append(newObject);
             update();
         } else if (m_checkbox[2]->isChecked()) {
             Engine3D *newObject = new Engine3D;
@@ -111,6 +124,7 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
             newObject->translate(t);
             m_objects.append(newObject);
             m_transformObjects.append(newObject);
+            m_selectedObjects.append(newObject);
             update();
         } else if (m_checkbox[3]->isChecked()) {
             Engine3D *newObject = new Engine3D;
@@ -118,8 +132,12 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
             newObject->translate(t);
             m_objects.append(newObject);
             m_transformObjects.append(newObject);
+            m_selectedObjects.append(newObject);
             update();
         }
+    } else if (event->buttons() == Qt::MiddleButton) {
+        int res = selectObject(event->pos().x(), event->pos().y(), m_selectedObjects);
+        qDebug() << res;
     }
     event->accept();
 }
@@ -256,6 +274,34 @@ QVector3D WidgetGL::screenCoordsToWorldCoords(const QVector2D &mousePosition)
     return result;
 }
 
+int WidgetGL::selectObject(int xx, int yy, QVector<Transformational *> &objs)
+{
+    m_selectBuffer->bind();
+
+    glViewport(0, 0, width(), height());
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    m_selectProgram.bind();
+    m_selectProgram.setUniformValue("u_projectionMatrix", m_projectionMatrix);
+    m_camera->draw(&m_selectProgram);
+
+    for (int i = 0; i < objs.size(); i++) {
+        m_selectProgram.setUniformValue("u_code", (float) (i + 1));
+        objs[i]->draw(&m_selectProgram, context()->functions());
+    }
+    m_selectProgram.release();
+
+    glEnable(GL_DEPTH_TEST);
+    GLuint viewport[4];
+    GLubyte res[4];
+    glGetIntegerv(GL_VIEWPORT, (GLint *) viewport);
+    glReadPixels(xx, viewport[3] - yy, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &res);
+    // m_selectBuffer->toImage().save("select.bmp");
+    m_selectBuffer->release();
+    glDisable(GL_DEPTH_TEST);
+    return res[0];
+}
+
 void WidgetGL::setCheckBox(QCheckBox *checkBox)
 {
     m_checkbox.append(checkBox);
@@ -270,6 +316,15 @@ void WidgetGL::initShaders()
         close();
 
     if (!m_shaderProgram.link())
+        close();
+
+    if (!m_selectProgram.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/select.vsh"))
+        close();
+
+    if (!m_selectProgram.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/select.fsh"))
+        close();
+
+    if (!m_selectProgram.link())
         close();
 }
 
