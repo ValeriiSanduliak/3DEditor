@@ -13,7 +13,7 @@ WidgetGL::WidgetGL(QWidget *parent)
     : QOpenGLWidget(parent)
 {
     setMouseTracking(true);
-    setFocusPolicy(Qt::StrongFocus); // Встановлення політики фокусу
+    setFocusPolicy(Qt::StrongFocus); // Встановлення політики
     m_camera = new Camera;
     m_camera->translate(QVector3D(0.0f, 0.0f, -5.0f));
 
@@ -39,10 +39,7 @@ void WidgetGL::initializeGL()
     glEnable(GL_CULL_FACE);
 
     initShaders();
-    initCube(1.0f, 1.0f, 1.0f);
-    m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, 2.0f, 0.0f));
-    m_transformObjects.append(m_objects[m_objects.size() - 1]);
-    m_selectedObjects.append(m_objects[m_objects.size() - 1]);
+
     connect(&m_timerMoveUp, &QTimer::timeout, this, &WidgetGL::moveCameraUp);
     connect(&m_timerMoveDown, &QTimer::timeout, this, &WidgetGL::moveCameraDown);
     connect(&m_timerMoveLeft, &QTimer::timeout, this, &WidgetGL::moveCameraLeft);
@@ -51,10 +48,6 @@ void WidgetGL::initializeGL()
     connect(&m_timerMoveBackward, &QTimer::timeout, this, &WidgetGL::moveCameraBackward);
 
     m_objects.append(new Engine3D);
-
-    initCube(1.0f, 1.0f, 1.0f);
-    m_transformObjects.append(m_objects[m_objects.size() - 1]);
-    m_selectedObjects.append(m_objects[m_objects.size() - 1]);
 
     initCube(40.0f, 2.0f, 40.0f);
     m_objects[m_objects.size() - 1]->translate(QVector3D(0.0f, -2.0f, 0.0f));
@@ -90,8 +83,8 @@ void WidgetGL::paintGL()
 
     m_camera->draw(&m_shaderProgram);
 
-    for (int i = 0; i < m_transformObjects.size(); ++i) {
-        m_transformObjects[i]->draw(&m_shaderProgram, context()->functions());
+    for (int i = 0; i < m_objects.size(); ++i) {
+        m_objects[i]->draw(&m_shaderProgram, context()->functions());
     }
 
     m_shaderProgram.release();
@@ -104,12 +97,14 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
     } else if (event->buttons() == Qt::RightButton) {
         QVector3D t = screenCoordsToWorldCoords(QVector2D(event->pos()));
         if (m_checkbox[0]->isChecked()) {
-            initCube(1.0f, 1.0f, 1.0f);
-            m_objects[m_objects.size() - 1]->translate(t);
-            m_transformObjects.append(m_objects[m_objects.size() - 1]);
-            m_selectedObjects.append(m_objects[m_objects.size() - 1]);
+            Engine3D *newObject = new Engine3D;
+            newObject->loadObjectFromFile(":/Objects/Cube.obj");
+            newObject->translate(t);
+            newObject->scale(0.5f);
+            m_objects.append(newObject);
+            m_transformObjects.append(newObject);
+            m_selectedObjects.append(newObject);
             update();
-
         } else if (m_checkbox[1]->isChecked()) {
             Engine3D *newObject = new Engine3D;
             newObject->loadObjectFromFile(":/Objects/Cylinder.obj");
@@ -136,23 +131,32 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
             update();
         }
     } else if (event->buttons() == Qt::MiddleButton) {
-        int res = selectObject(event->pos().x(), event->pos().y(), m_selectedObjects);
-        qDebug() << res;
+        m_selectedObjectIndex = selectObject(event->pos().x(), event->pos().y(), m_objects);
+        if (m_selectedObjectIndex != -1) {
+            qDebug() << "Object" << m_selectedObjectIndex << " selected for movement";
+            m_mousePosition = QVector2D(event->pos());
+        }
     }
     event->accept();
 }
 
 void WidgetGL::mouseMoveEvent(QMouseEvent *event)
 {
+    if (event->buttons() & Qt::MiddleButton) {
+        QVector2D diff = QVector2D(event->pos()) - m_mousePosition;
+        m_mousePosition = QVector2D(event->pos());
+
+        if (m_selectedObjectIndex != 0) {
+            m_objects[m_selectedObjectIndex - 1]->translate(
+                QVector3D(diff.x() / 200.0f, -diff.y() / 200.0f, 0.0f));
+            update();
+        }
+    }
+
     if (event->buttons() != Qt::LeftButton)
         return;
-
     QVector2D diff = QVector2D(event->pos()) - m_mousePosition;
     m_mousePosition = QVector2D(event->pos());
-
-    // float angle = diff.length() / 2.0;
-    // QVector3D axis = QVector3D(diff.y(), diff.x(), 0.0);
-    // m_camera->rotate(QQuaternion::fromAxisAndAngle(axis, angle));
 
     float angleX = diff.y() / 2.0f;
     float angleY = diff.x() / 2.0f;
@@ -161,16 +165,18 @@ void WidgetGL::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
-// void WidgetGL::wheelEvent(QWheelEvent *event)
-// {
-//     if (event->angleDelta().y() > 0) {
-//         m_camera->translate(QVector3D(0.0f, 0.0f, +0.25f));
-//     } else if (event->angleDelta().y() < 0) {
-//         m_camera->translate(QVector3D(0.0f, 0.0f, -0.25f));
-//     }
+void WidgetGL::wheelEvent(QWheelEvent *event)
+{
+    if (m_selectedObjectIndex != 0) {
+        if (event->angleDelta().y() > 0) {
+            m_objects[m_selectedObjectIndex - 1]->translate(QVector3D(0.0f, 0.0f, +0.1f));
+        } else if (event->angleDelta().y() < 0) {
+            m_objects[m_selectedObjectIndex - 1]->translate(QVector3D(0.0f, 0.0f, -0.1f));
+        }
 
-//     update();
-// }
+        update();
+    }
+}
 
 void WidgetGL::keyPressEvent(QKeyEvent *event)
 {
@@ -274,7 +280,7 @@ QVector3D WidgetGL::screenCoordsToWorldCoords(const QVector2D &mousePosition)
     return result;
 }
 
-int WidgetGL::selectObject(int xx, int yy, QVector<Transformational *> &objs)
+int WidgetGL::selectObject(int xx, int yy, QVector<Engine3D *> &objs)
 {
     m_selectBuffer->bind();
 
@@ -291,14 +297,16 @@ int WidgetGL::selectObject(int xx, int yy, QVector<Transformational *> &objs)
     }
     m_selectProgram.release();
 
-    glEnable(GL_DEPTH_TEST);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+
     GLuint viewport[4];
     GLubyte res[4];
     glGetIntegerv(GL_VIEWPORT, (GLint *) viewport);
     glReadPixels(xx, viewport[3] - yy, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &res);
     // m_selectBuffer->toImage().save("select.bmp");
+
     m_selectBuffer->release();
-    glDisable(GL_DEPTH_TEST);
+
     return res[0];
 }
 

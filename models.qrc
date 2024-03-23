@@ -11,5 +11,7 @@
         <file>Objects/Sphere.obj</file>
         <file>Monkey2side.mtl</file>
         <file>Monkey2side.obj</file>
+        <file>Objects/Cube.mtl</file>
+        <file>Objects/Cube.obj</file>
     </qresource>
 </RCC>

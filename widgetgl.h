@@ -60,7 +60,9 @@ protected:
 
     QVector3D screenCoordsToWorldCoords(const QVector2D &mousePosition);
 
-    int selectObject(int xx, int yy, QVector<Transformational *> &objs);
+    int selectObject(int xx, int yy, QVector<Engine3D *> &objs);
+
+    void wheelEvent(QWheelEvent *event) override;
 
 private:
     // Model view projection matrix
@@ -85,8 +87,11 @@ private:
     QTimer m_timerMoveRight;
     QTimer m_timerMoveForward;
     QTimer m_timerMoveBackward;
+    QTimer m_timerMoveObject;
     float cameraSpeed = 0.1f;
     uint timerSpeed = 14;
+
+    int m_selectedObjectIndex = -1;
 
     QVector<QCheckBox *> m_checkbox; // Посилання на checkbox
 };
