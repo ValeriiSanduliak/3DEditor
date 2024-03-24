@@ -91,10 +91,13 @@ void Engine3D::addObject(Object3D *object)
 
 Object3D *Engine3D::getObject(quint32 index)
 {
-    if (index < (quint32) m_objects.size())
+    if (index < m_objects.size()) {
         return m_objects[index];
-    else
-        return 0;
+    } else {
+        // Handle out-of-bounds index gracefully
+        qDebug() << "Error: Invalid object index";
+        return nullptr;
+    }
 }
 
 void Engine3D::calculateTBN(QVector<VertexData> &vertData)

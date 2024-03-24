@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <QColorDialog>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -99,5 +100,25 @@ void MainWindow::on_pushButton_clicked()
             return;
         }
         ui->widget->setTexture(fileName);
+    }
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    QColorDialog dialog;
+    QColor color = dialog.getColor();
+
+    if (color.isValid()) {
+        int red = color.red();
+        int green = color.green();
+        int blue = color.blue();
+
+        QImage image(500, 500, QImage::Format_ARGB32);
+        image.fill(color);
+
+        ui->widget->setTexture(image);
+
+    } else {
+        QMessageBox::critical(this, tr("Error"), tr("Invalid color selected or dialog cancelled."));
     }
 }

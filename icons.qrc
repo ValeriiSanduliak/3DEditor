@@ -9,5 +9,6 @@
         <file>Icon_Cube_Active.png</file>
         <file>Icon_Cube_Inactive.png</file>
         <file>Icon_Texture.png</file>
+        <file>Icon_Texture_Image.png</file>
     </qresource>
 </RCC>

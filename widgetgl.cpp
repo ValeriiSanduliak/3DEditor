@@ -327,23 +327,41 @@ void WidgetGL::loadObjectFromFile(const QString &filename)
 
 void WidgetGL::setTexture(const QString &filename)
 {
-    if (m_selectedObjectIndex != 0) {
-        // Отримуємо об'єкт, для якого ми хочемо змінити текстуру
-        // Object3D *obj = m_objects[m_selectedObjectIndex - 1]->getObject(m_selectedObjectIndex - 1);
+    if (m_selectedObjectIndex != 0 && m_selectedObjectIndex != -1) {
+        QImage image(filename);
+        if (image.isNull()) {
+            qDebug() << "Error: Failed to load texture image";
+            return;
+        }
 
-        // QOpenGLTexture *texture = new QOpenGLTexture(QImage(filename).mirrored());
+        QOpenGLTexture *texture = new QOpenGLTexture(image.mirrored());
+        texture->setMinificationFilter(QOpenGLTexture::Nearest);
+        texture->setMagnificationFilter(QOpenGLTexture::Linear);
+        texture->setWrapMode(QOpenGLTexture::Repeat);
 
-        // texture->setMinificationFilter(QOpenGLTexture::Nearest);
+        Object3D *obj = m_objects[m_selectedObjectIndex - 1]->getObject(0);
 
-        // texture->setMinificationFilter(QOpenGLTexture::Linear);
+        obj->setTexture(texture);
 
-        // texture->setWrapMode(QOpenGLTexture::Repeat);
+        update();
+    } else {
+        qDebug() << "Error: No object selected";
+    }
+}
 
-        // obj->setTexture(texture);
+void WidgetGL::setTexture(const QImage &image)
+{
+    if (m_selectedObjectIndex != 0 && m_selectedObjectIndex != -1) {
+        QOpenGLTexture *texture = new QOpenGLTexture(image.mirrored());
+        texture->setMinificationFilter(QOpenGLTexture::Nearest);
+        texture->setMagnificationFilter(QOpenGLTexture::Linear);
+        texture->setWrapMode(QOpenGLTexture::Repeat);
 
-        // qDebug() << obj;
-        // update();
+        Object3D *obj = m_objects[m_selectedObjectIndex - 1]->getObject(0);
 
+        obj->setTexture(texture);
+
+        update();
     } else {
         qDebug() << "Error: No object selected";
     }

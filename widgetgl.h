@@ -30,6 +30,7 @@ public:
     void setCheckBox(QCheckBox *checkBox);
     void loadObjectFromFile(const QString &filename);
     void setTexture(const QString &filename);
+    void setTexture(const QImage &image);
 
 protected:
     // QOpenGLWidget interface
