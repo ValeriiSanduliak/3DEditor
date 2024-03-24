@@ -8,5 +8,6 @@
         <file>Icon_Sphere_Inactive.png</file>
         <file>Icon_Cube_Active.png</file>
         <file>Icon_Cube_Inactive.png</file>
+        <file>Icon_Texture.png</file>
     </qresource>
 </RCC>

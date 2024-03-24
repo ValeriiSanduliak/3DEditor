@@ -60,7 +60,7 @@ void MaterialLibrary::loadMaterialFromFile(const QString &filename)
     QTextStream m_inputStream(&m_mtlFile);
 
     Material *newMtl = 0;
-
+    bool hasData = false; // Flag to check if any data is read from the file
     while (!m_inputStream.atEnd()) {
         QString str = m_inputStream.readLine();
         QStringList list = str.split(" ");
@@ -72,13 +72,19 @@ void MaterialLibrary::loadMaterialFromFile(const QString &filename)
             addMaterial(newMtl);
             newMtl = new Material;
             newMtl->setName(list[1]);
-
         } else if (list[0] == "Kd") {
             newMtl->setDiffuseColor(
                 QVector3D(list[1].toFloat(), list[2].toFloat(), list[3].toFloat()));
+            hasData = true;
         } else if (list[0] == "map_Kd") {
             newMtl->setDiffuseMap(QString("%1/%2").arg(fileInfo.absolutePath()).arg(list[1]));
+            hasData = true;
         }
+    }
+
+    if (!hasData) {
+        // If no data is read from the file, set default texture
+        newMtl->setDiffuseMap(":/Objects/default.png");
     }
 
     addMaterial(newMtl);

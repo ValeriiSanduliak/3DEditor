@@ -10,6 +10,7 @@
 #include <QOpenGLTexture>
 #include <QOpenGLWidget>
 #include <QQuaternion>
+#include <QString>
 #include <QTimer>
 #include <QVector2D>
 #include <QVector3D>
@@ -27,6 +28,8 @@ public:
     ~WidgetGL();
 
     void setCheckBox(QCheckBox *checkBox);
+    void loadObjectFromFile(const QString &filename);
+    void setTexture(const QString &filename);
 
 protected:
     // QOpenGLWidget interface

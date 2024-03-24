@@ -21,6 +21,11 @@ public:
 protected slots:
     void checkBoxClicked();
 
+private slots:
+    void on_actionLoad_model_obj_triggered();
+
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QList<QCheckBox *> checkBoxes;

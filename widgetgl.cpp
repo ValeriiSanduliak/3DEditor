@@ -133,7 +133,7 @@ void WidgetGL::mousePressEvent(QMouseEvent *event)
     } else if (event->buttons() == Qt::MiddleButton) {
         m_selectedObjectIndex = selectObject(event->pos().x(), event->pos().y(), m_objects);
         if (m_selectedObjectIndex != -1) {
-            qDebug() << "Object" << m_selectedObjectIndex << " selected for movement";
+            qDebug() << "Object" << m_selectedObjectIndex << " selected ";
             m_mousePosition = QVector2D(event->pos());
         }
     }
@@ -146,7 +146,7 @@ void WidgetGL::mouseMoveEvent(QMouseEvent *event)
         QVector2D diff = QVector2D(event->pos()) - m_mousePosition;
         m_mousePosition = QVector2D(event->pos());
 
-        if (m_selectedObjectIndex != 0) {
+        if (m_selectedObjectIndex != 0 && m_selectedObjectIndex != -1) {
             m_objects[m_selectedObjectIndex - 1]->translate(
                 QVector3D(diff.x() / 200.0f, -diff.y() / 200.0f, 0.0f));
             update();
@@ -313,6 +313,40 @@ int WidgetGL::selectObject(int xx, int yy, QVector<Engine3D *> &objs)
 void WidgetGL::setCheckBox(QCheckBox *checkBox)
 {
     m_checkbox.append(checkBox);
+}
+
+void WidgetGL::loadObjectFromFile(const QString &filename)
+{
+    Engine3D *newObject = new Engine3D;
+    newObject->loadObjectFromFile(filename);
+    m_objects.append(newObject);
+    m_transformObjects.append(newObject);
+    m_selectedObjects.append(newObject);
+    update();
+}
+
+void WidgetGL::setTexture(const QString &filename)
+{
+    if (m_selectedObjectIndex != 0) {
+        // Отримуємо об'єкт, для якого ми хочемо змінити текстуру
+        // Object3D *obj = m_objects[m_selectedObjectIndex - 1]->getObject(m_selectedObjectIndex - 1);
+
+        // QOpenGLTexture *texture = new QOpenGLTexture(QImage(filename).mirrored());
+
+        // texture->setMinificationFilter(QOpenGLTexture::Nearest);
+
+        // texture->setMinificationFilter(QOpenGLTexture::Linear);
+
+        // texture->setWrapMode(QOpenGLTexture::Repeat);
+
+        // obj->setTexture(texture);
+
+        // qDebug() << obj;
+        // update();
+
+    } else {
+        qDebug() << "Error: No object selected";
+    }
 }
 
 void WidgetGL::initShaders()
