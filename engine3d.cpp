@@ -1,7 +1,8 @@
 #include "engine3d.h"
 #include <QFile>
 #include <QFileInfo>
-
+#include <QMessageBox>
+#include <iostream>
 Engine3D::Engine3D() {}
 
 void Engine3D::loadObjectFromFile(const QString &filename)
@@ -24,53 +25,77 @@ void Engine3D::loadObjectFromFile(const QString &filename)
     QVector<GLuint> indexes;
     Object3D *object = 0;
     QString mtlName;
+    try {
+        while (!input.atEnd()) {
+            QString str = input.readLine();
+            QStringList list = str.split(" ");
+            if (list[0] == "#") {
+                qDebug() << "This is comment : " << str;
+                continue;
+            } else if (list[0] == "mtllib") {
+                QFileInfo info(filename);
+                m_materialLibrary.loadMaterialFromFile(
+                    QString("%1/%2").arg(info.absolutePath()).arg(list[1]));
+                qDebug() << "This is file material : " << str;
+                continue;
+            } else if (list[0] == "v") {
+                coords.append(QVector3D(list[1].toFloat(), list[2].toFloat(), list[3].toFloat()));
+                //          qDebug() << list[1].toFloat() << list[2].toFloat() << list[3].toFloat() ;
+                continue;
+            } else if (list[0] == "vt") {
+                texCoords.append(QVector2D(list[1].toFloat(), list[2].toFloat()));
+                continue;
+            } else if (list[0] == "vn") {
+                normals.append(QVector3D(list[1].toFloat(), list[2].toFloat(), list[3].toFloat()));
+                continue;
+            } else if (list[0] == "f") {
+                for (int i = 1; i <= 3; ++i) {
+                    QStringList vert = list[i].split("/");
 
-    while (!input.atEnd()) {
-        QString str = input.readLine();
-        QStringList list = str.split(" ");
-        if (list[0] == "#") {
-            qDebug() << "This is comment : " << str;
-            continue;
-        } else if (list[0] == "mtllib") {
-            QFileInfo info(filename);
-            m_materialLibrary.loadMaterialFromFile(
-                QString("%1/%2").arg(info.absolutePath()).arg(list[1]));
-            qDebug() << "This is file material : " << str;
-            continue;
-        } else if (list[0] == "v") {
-            coords.append(QVector3D(list[1].toFloat(), list[2].toFloat(), list[3].toFloat()));
-            //          qDebug() << list[1].toFloat() << list[2].toFloat() << list[3].toFloat() ;
-            continue;
-        } else if (list[0] == "vt") {
-            texCoords.append(QVector2D(list[1].toFloat(), list[2].toFloat()));
-            continue;
-        } else if (list[0] == "vn") {
-            normals.append(QVector3D(list[1].toFloat(), list[2].toFloat(), list[3].toFloat()));
-            continue;
-        } else if (list[0] == "f") {
-            for (int i = 1; i <= 3; ++i) {
-                QStringList vert = list[i].split("/");
-                vertexes.append(VertexData(coords[vert[0].toLong() - 1],
-                                           texCoords[vert[1].toLong() - 1],
-                                           normals[vert[2].toLong() - 1]));
-                indexes.append(indexes.size());
+                    bool conversionOk = false;
+                    long index0 = vert[0].toLong(&conversionOk);
+                    if (!conversionOk) {
+                        throw std::runtime_error("Invalid file");
+                    }
+
+                    long index1 = vert[1].toLong(&conversionOk);
+                    if (!conversionOk) {
+                        throw std::runtime_error("Invalid file");
+                    }
+
+                    long index2 = vert[2].toLong(&conversionOk);
+                    if (!conversionOk) {
+                        throw std::runtime_error("Invalid file");
+                    }
+
+                    vertexes.append(
+                        VertexData(coords[index0 - 1], texCoords[index1 - 1], normals[index2 - 1]));
+                    indexes.append(indexes.size());
+                }
+                continue;
+            } else if (list[0] == "usemtl") {
+                if (object) {
+                    calculateTBN(vertexes);
+                    object->init(vertexes, indexes, m_materialLibrary.getMaterial(mtlName));
+                }
+                mtlName = list[1];
+                addObject(object);
+                object = new Object3D;
+                vertexes.clear();
+                indexes.clear();
             }
-            continue;
-        } else if (list[0] == "usemtl") {
-            if (object) {
-                calculateTBN(vertexes);
-                object->init(vertexes, indexes, m_materialLibrary.getMaterial(mtlName));
-            }
-            mtlName = list[1];
-            addObject(object);
-            object = new Object3D;
-            vertexes.clear();
-            indexes.clear();
         }
-    }
-    if (object) {
-        calculateTBN(vertexes);
-        object->init(vertexes, indexes, m_materialLibrary.getMaterial(mtlName));
+        if (object) {
+            calculateTBN(vertexes);
+            object->init(vertexes, indexes, m_materialLibrary.getMaterial(mtlName));
+        }
+    } catch (std::runtime_error &e) {
+        QMessageBox::critical(0, "Error", e.what());
+        if (object) {
+            delete object;
+        }
+        objFile.close();
+        return;
     }
     addObject(object);
 
