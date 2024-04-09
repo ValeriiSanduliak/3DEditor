@@ -167,7 +167,8 @@ void WidgetGL::mouseMoveEvent(QMouseEvent *event)
 
 void WidgetGL::wheelEvent(QWheelEvent *event)
 {
-    if (m_selectedObjectIndex != 0) {
+    if (m_selectedObjectIndex != 0 && m_selectedObjectIndex > 0
+        && m_selectedObjectIndex <= m_objects.size()) {
         if (event->angleDelta().y() > 0) {
             m_objects[m_selectedObjectIndex - 1]->translate(QVector3D(0.0f, 0.0f, +0.1f));
         } else if (event->angleDelta().y() < 0) {
