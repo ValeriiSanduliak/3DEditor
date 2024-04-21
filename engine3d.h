@@ -12,7 +12,6 @@ public:
     void loadObjectFromFile(const QString &filename);
     void addObject(Object3D *object);
     Object3D *getObject(quint32 index);
-    void calculateTBN(QVector<VertexData> &vertData);
 
     void draw(QOpenGLShaderProgram *program, QOpenGLFunctions *functions);
     void rotate(const QQuaternion &r);

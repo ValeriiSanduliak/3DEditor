@@ -75,7 +75,6 @@ void Engine3D::loadObjectFromFile(const QString &filename)
                 continue;
             } else if (list[0] == "usemtl") {
                 if (object) {
-                    calculateTBN(vertexes);
                     object->init(vertexes, indexes, m_materialLibrary.getMaterial(mtlName));
                 }
                 mtlName = list[1];
@@ -86,7 +85,6 @@ void Engine3D::loadObjectFromFile(const QString &filename)
             }
         }
         if (object) {
-            calculateTBN(vertexes);
             object->init(vertexes, indexes, m_materialLibrary.getMaterial(mtlName));
         }
     } catch (std::runtime_error &e) {
@@ -122,37 +120,6 @@ Object3D *Engine3D::getObject(quint32 index)
         // Handle out-of-bounds index gracefully
         qDebug() << "Error: Invalid object index";
         return nullptr;
-    }
-}
-
-void Engine3D::calculateTBN(QVector<VertexData> &vertData)
-{
-    for (int i = 0; i < vertData.size(); i += 3) {
-        QVector3D &v1 = vertData[i].position;
-        QVector3D &v2 = vertData[i + 1].position;
-        QVector3D &v3 = vertData[i + 2].position;
-
-        QVector2D &uv1 = vertData[i].texCoord;
-        QVector2D &uv2 = vertData[i + 1].texCoord;
-        QVector2D &uv3 = vertData[i + 2].texCoord;
-
-        QVector3D deltaPos1 = v2 - v1;
-        QVector3D deltaPos2 = v3 - v1;
-
-        QVector2D deltaUV1 = uv2 - uv1;
-        QVector2D deltaUV2 = uv3 - uv1;
-
-        float r = 1.0f / (deltaUV1.x() * deltaUV2.y() - deltaUV1.y() * deltaUV2.x());
-        QVector3D tangent = (deltaPos1 * deltaUV2.y() - deltaPos2 * deltaUV1.y()) * r;
-        QVector3D bitangent = (deltaPos2 * deltaUV1.x() - deltaPos1 * deltaUV2.x()) * r;
-
-        vertData[i].tangent = tangent;
-        vertData[i + 1].tangent = tangent;
-        vertData[i + 2].tangent = tangent;
-
-        vertData[i].bitangent = bitangent;
-        vertData[i + 1].bitangent = bitangent;
-        vertData[i + 2].bitangent = bitangent;
     }
 }
 
