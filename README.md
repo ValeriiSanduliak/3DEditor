@@ -16,4 +16,5 @@ This project is a 3D editor application developed using C++ and OpenGL. It allow
 To run the 3D Editor, follow these steps:
 1. Download the latest release from the [Releases](https://github.com/ValeriiSanduliak/3DEditor/releases/tag/3DEditorQt) page.
 2. Extract the contents of the downloaded ZIP file to a location on your computer.
+3. Navigate to the extracted folder and double-click on the executable file (`.exe`) to launch the 3D Editor.
 
